@@ -11,7 +11,8 @@ app = FastAPI()
 # ✅ Aggiungi il middleware CORS qui
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # metti l'URL del frontend
+    allow_origins=["http://localhost:3000",
+    "https://biblioteca-frontend-v0di.onrender.com"],  # metti l'URL del frontend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
