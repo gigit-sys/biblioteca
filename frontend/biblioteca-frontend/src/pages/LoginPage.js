@@ -1,8 +1,12 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { useLocation } from "react-router-dom";
 
+// Prende l'URL base dall'ambiente (local o remote)
+const BASE_URL =
+  process.env.REACT_APP_ENV === "local"
+    ? process.env.REACT_APP_API_LOCAL
+    : process.env.REACT_APP_API_REMOTE;
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -13,13 +17,12 @@ const LoginPage = () => {
   const location = useLocation();
   const isExpired = new URLSearchParams(location.search).get("expired");
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
     try {
-      const response = await fetch("http://localhost:8000/auth/login", {
+      const response = await fetch(`${BASE_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -41,16 +44,17 @@ const LoginPage = () => {
   return (
     <div className="container mt-5" style={{ maxWidth: 400 }}>
       <h2 className="mb-4 text-center">Login</h2>
+
       {error && (
         <div className="alert alert-danger" role="alert">
           {error}
         </div>
       )}
       {isExpired && (
-  <div className="alert alert-warning" role="alert">
-    Sessione scaduta, accedi di nuovo.
-  </div>
-)}
+        <div className="alert alert-warning" role="alert">
+          Sessione scaduta, accedi di nuovo.
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         <div className="mb-3">

@@ -4,6 +4,11 @@ import * as XLSX from "xlsx";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
+const API_URL =
+  process.env.REACT_APP_ENV === "local"
+    ? process.env.REACT_APP_API_LOCAL
+    : process.env.REACT_APP_API_REMOTE;
+
 const ListaLibri = () => {
   const [libri, setLibri] = useState([]);
   const [filtro, setFiltro] = useState("");
@@ -19,7 +24,7 @@ const ListaLibri = () => {
   const fetchLibri = async () => {
     try {
       const token = localStorage.getItem("access_token");
-      const res = await axios.get("http://localhost:8000/libreria", {
+      const res = await axios.get(`${API_URL}/libreria`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -44,63 +49,58 @@ const ListaLibri = () => {
       setSortOrder("asc");
     }
   };
-const handleDelete = async (id) => {
-  const conferma = window.confirm("Sei sicuro di voler eliminare questo libro?");
-  if (!conferma) return;
 
-  try {
-    const token = localStorage.getItem("access_token");
-    await axios.delete(`http://localhost:8000/libreria/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    setLibri((prev) => prev.filter((libro) => libro.id !== id));
-  } catch (err) {
-    alert("Errore durante l'eliminazione del libro.");
-    console.error(err);
-  }
-};
+  const handleDelete = async (id) => {
+    const conferma = window.confirm("Sei sicuro di voler eliminare questo libro?");
+    if (!conferma) return;
 
- const handleLogout = () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      await axios.delete(`${API_URL}/libreria/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setLibri((prev) => prev.filter((libro) => libro.id !== id));
+    } catch (err) {
+      alert("Errore durante l'eliminazione del libro.");
+      console.error(err);
+    }
+  };
+
+  const handleLogout = () => {
     logoutUser();
     navigate("/");
   };
-const exportExcel = () => {
-  const rows = [
-    ["Titolo", "Autore", "Casa Editrice", "Stato", "Prezzo", "Data Vendita"],
-    ...filteredAndSortedLibri.map((libro) => [
-      libro.titolo,
-      libro.autore,
-      libro.casa_editrice,
-      libro.venduto ? "Venduto" : "Disponibile",
-      libro.venduto ? libro.prezzo_v?.toFixed(2) : "",
-      libro.venduto && libro.data_vendita
-        ? new Date(libro.data_vendita).toLocaleDateString()
-        : "",
-    ]),
-  ];
 
-  // Calcola totale venduto
-  const totaleVenduto = filteredAndSortedLibri
-    .filter((libro) => libro.venduto)
-    .reduce((acc, libro) => acc + (libro.prezzo_v || 0), 0);
+  const exportExcel = () => {
+    const rows = [
+      ["Titolo", "Autore", "Casa Editrice", "Stato", "Prezzo", "Data Vendita"],
+      ...filteredAndSortedLibri.map((libro) => [
+        libro.titolo,
+        libro.autore,
+        libro.casa_editrice,
+        libro.venduto ? "Venduto" : "Disponibile",
+        libro.venduto ? libro.prezzo_v?.toFixed(2) : "",
+        libro.venduto && libro.data_vendita
+          ? new Date(libro.data_vendita).toLocaleDateString()
+          : "",
+      ]),
+    ];
 
-  // Aggiungi riga vuota e riga totale
-  rows.push([]);
-  rows.push(["", "", "", "Totale Venduto", totaleVenduto.toFixed(2), ""]);
+    const totaleVenduto = filteredAndSortedLibri
+      .filter((libro) => libro.venduto)
+      .reduce((acc, libro) => acc + (libro.prezzo_v || 0), 0);
 
-  // Crea workbook e worksheet
-  const worksheet = XLSX.utils.aoa_to_sheet(rows);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Libri");
+    rows.push([]);
+    rows.push(["", "", "", "Totale Venduto", totaleVenduto.toFixed(2), ""]);
 
-  // Esporta file Excel
-  XLSX.writeFile(workbook, "libri.xlsx");
-};
+    const worksheet = XLSX.utils.aoa_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Libri");
 
-
-
+    XLSX.writeFile(workbook, "libri.xlsx");
+  };
 
   const filteredAndSortedLibri = libri
     .filter((libro) => {
@@ -136,9 +136,8 @@ const exportExcel = () => {
 
   return (
     <div className="container mt-4">
-      {/* Barra superiore */}
       <div className="d-flex justify-content-between align-items-center mb-3">
-     <h2 className="mb-0">🐁📚 Libri presenti</h2>
+        <h2 className="mb-0">🐁📚 Libri presenti</h2>
         <div>
           <button
             className="btn btn-success"
@@ -146,13 +145,12 @@ const exportExcel = () => {
           >
             ➕ Aggiungi Libro
           </button>
-           <button className="btn btn-danger ms-auto" onClick={handleLogout}>
-          🚪 Logout
-        </button>
+          <button className="btn btn-danger ms-auto" onClick={handleLogout}>
+            🚪 Logout
+          </button>
         </div>
       </div>
 
-      {/* Filtri */}
       <div className="row mb-3">
         <div className="col-md-6 mb-2">
           <input
@@ -181,7 +179,6 @@ const exportExcel = () => {
         </div>
       </div>
 
-      {/* Tabella */}
       <div className="table-responsive">
         <table className="table table-striped table-bordered text-center align-middle">
           <thead className="table-dark">
@@ -199,37 +196,36 @@ const exportExcel = () => {
               <th>Azioni</th>
             </tr>
           </thead>
-    <tbody>
-  {filteredAndSortedLibri.map((libro) => (
-    <tr key={libro.id}>
-      <td>{libro.titolo}</td>
-      <td>{libro.autore}</td>
-      <td>{libro.casa_editrice}</td>
-      <td>{libro.venduto ? "Venduto" : "Disponibile"}</td>
-      <td>{libro.venduto ? libro.prezzo_v?.toFixed(2) : "-"}</td>
-      <td>
-        {libro.venduto && libro.data_vendita
-          ? new Date(libro.data_vendita).toLocaleDateString()
-          : "-"}
-      </td>
-      <td>
-        <button
-          className="btn btn-sm btn-warning me-2"
-          onClick={() => navigate(`/libri/modifica/${libro.id}`)}
-        >
-          ✏️ Modifica
-        </button>
-        <button
-          className="btn btn-sm btn-danger"
-          onClick={() => handleDelete(libro.id)}
-        >
-          🗑️ Elimina
-        </button>
-      </td>
-    </tr>
-  ))}
-</tbody>
-
+          <tbody>
+            {filteredAndSortedLibri.map((libro) => (
+              <tr key={libro.id}>
+                <td>{libro.titolo}</td>
+                <td>{libro.autore}</td>
+                <td>{libro.casa_editrice}</td>
+                <td>{libro.venduto ? "Venduto" : "Disponibile"}</td>
+                <td>{libro.venduto ? libro.prezzo_v?.toFixed(2) : "-"}</td>
+                <td>
+                  {libro.venduto && libro.data_vendita
+                    ? new Date(libro.data_vendita).toLocaleDateString()
+                    : "-"}
+                </td>
+                <td>
+                  <button
+                    className="btn btn-sm btn-warning me-2"
+                    onClick={() => navigate(`/libri/modifica/${libro.id}`)}
+                  >
+                    ✏️ Modifica
+                  </button>
+                  <button
+                    className="btn btn-sm btn-danger"
+                    onClick={() => handleDelete(libro.id)}
+                  >
+                    🗑️ Elimina
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
         </table>
       </div>
     </div>

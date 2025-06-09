@@ -2,6 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 
+const BASE_URL =
+  process.env.REACT_APP_ENV === "local"
+    ? process.env.REACT_APP_API_LOCAL
+    : process.env.REACT_APP_API_REMOTE;
+
 const ModificaLibro = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -19,7 +24,7 @@ const ModificaLibro = () => {
     const fetchLibro = async () => {
       try {
         const token = localStorage.getItem("access_token");
-        const res = await axios.get(`http://localhost:8000/libreria/${id}`, {
+        const res = await axios.get(`${BASE_URL}/libreria/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -60,7 +65,7 @@ const ModificaLibro = () => {
 
     try {
       await axios.put(
-        `http://localhost:8000/libreria/${id}`,
+        `${BASE_URL}/libreria/${id}`,
         {
           titolo,
           autore,

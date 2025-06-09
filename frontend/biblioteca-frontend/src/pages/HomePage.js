@@ -1,7 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import sfondo from "../images/mignol.jpg"; // Usa il tuo nuovo file ad alta risoluzione
+import sfondo from "../images/mignol.jpg";
+
+const BASE_URL =
+  process.env.REACT_APP_ENV === "local"
+    ? process.env.REACT_APP_API_LOCAL
+    : process.env.REACT_APP_API_REMOTE;
 
 const HomePage = () => {
   const { user, loginUser } = useAuth();
@@ -12,9 +17,7 @@ const HomePage = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  if (user) {
-    return <Navigate to="/libri" replace />;
-  }
+  if (user) return <Navigate to="/libri" replace />;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,7 +25,7 @@ const HomePage = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8000/auth/login", {
+      const response = await fetch(`${BASE_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -38,6 +41,7 @@ const HomePage = () => {
       navigate("/dashboard");
     } catch (err) {
       setError(err.message);
+    } finally {
       setLoading(false);
     }
   };
@@ -51,8 +55,8 @@ const HomePage = () => {
         backgroundPosition: "center",
         display: "flex",
         alignItems: "center",
-        justifyContent: "flex-start", // form a sinistra
-        paddingLeft: "5%", // spazio dal bordo sinistro
+        justifyContent: "flex-start",
+        paddingLeft: "5%",
       }}
     >
       <div
@@ -72,9 +76,7 @@ const HomePage = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
-            <label htmlFor="email" className="form-label">
-              Email
-            </label>
+            <label htmlFor="email" className="form-label">Email</label>
             <input
               id="email"
               type="email"
@@ -87,9 +89,7 @@ const HomePage = () => {
           </div>
 
           <div className="mb-3">
-            <label htmlFor="password" className="form-label">
-              Password
-            </label>
+            <label htmlFor="password" className="form-label">Password</label>
             <input
               id="password"
               type="password"
@@ -103,18 +103,10 @@ const HomePage = () => {
 
           {error && <div className="alert alert-danger">{error}</div>}
 
-          <button
-            type="submit"
-            className="btn btn-primary w-100"
-            disabled={loading}
-          >
+          <button type="submit" className="btn btn-primary w-100" disabled={loading}>
             {loading ? (
               <>
-                <span
-                  className="spinner-border spinner-border-sm"
-                  role="status"
-                  aria-hidden="true"
-                ></span>{" "}
+                <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>{" "}
                 Caricamento...
               </>
             ) : (
