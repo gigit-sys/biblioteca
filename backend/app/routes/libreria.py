@@ -49,3 +49,15 @@ def get_libro(libro_id: int, db: Session = Depends(get_db)):
     if not libro:
         raise HTTPException(status_code=404, detail="Libro non trovato")
     return libro
+
+@router.patch("/{libro_id}/toggle-pagato", dependencies=[Depends(require_role(["admin", "user"]))])
+def toggle_pagato(libro_id: int, db: Session = Depends(get_db)):
+    libro = db.query(Libreria).filter(Libreria.id == libro_id).first()
+    if not libro:
+        raise HTTPException(status_code=404, detail="Libro non trovato")
+
+    libro.pagato = not libro.pagato
+    db.commit()
+    db.refresh(libro)
+
+    return {"id": libro.id, "pagato": libro.pagato}

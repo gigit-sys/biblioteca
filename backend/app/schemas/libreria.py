@@ -9,6 +9,7 @@ class LibreriaBase(BaseModel):
     venduto: Optional[bool] = False
     prezzo_v: Optional[float] = None
     data_vendita: Optional[date] = None
+    pagato: Optional[bool] = False  # 👉 AGGIUNGI QUESTO
 
 class LibreriaCreate(LibreriaBase):
     pass

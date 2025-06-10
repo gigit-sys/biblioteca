@@ -11,4 +11,4 @@ class Libreria(Base):
     venduto = Column(Boolean, default=False)
     prezzo_v = Column(Float, nullable=True)
     data_vendita = Column(Date, nullable=True)
-
+    pagato = Column(Boolean, default=False)  # 👉 AGGIUNGI QUESTA
