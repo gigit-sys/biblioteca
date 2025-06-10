@@ -2,11 +2,17 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+const API_URL =
+  process.env.REACT_APP_ENV === "local"
+    ? process.env.REACT_APP_API_LOCAL
+    : process.env.REACT_APP_API_REMOTE;
+
 const AggiungiLibro = () => {
   const [titolo, setTitolo] = useState("");
   const [autore, setAutore] = useState("");
   const [casaEditrice, setCasaEditrice] = useState("");
   const [venduto, setVenduto] = useState(false);
+  const [pagato, setPagato] = useState(false);
   const [prezzoVendita, setPrezzoVendita] = useState("");
   const [dataVendita, setDataVendita] = useState("");
   const [errore, setErrore] = useState(null);
@@ -18,6 +24,7 @@ const AggiungiLibro = () => {
     setAutore("");
     setCasaEditrice("");
     setVenduto(false);
+    setPagato(false);
     setPrezzoVendita("");
     setDataVendita("");
   };
@@ -33,12 +40,13 @@ const AggiungiLibro = () => {
 
     try {
       await axios.post(
-        "http://localhost:8000/libreria/",
+        `${API_URL}/libreria/`,
         {
           titolo,
           autore,
           casa_editrice: casaEditrice,
           venduto,
+          pagato: venduto ? pagato : false,
           prezzo_v: venduto ? parseFloat(prezzoVendita) : null,
           data_vendita: venduto && dataVendita ? new Date(dataVendita).toISOString() : null,
         },
@@ -59,17 +67,14 @@ const AggiungiLibro = () => {
 
   return (
     <div className="container mt-5">
-      {/* Barra superiore */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="mb-0">📘 Aggiungi un nuovo libro</h2>
-        <div>
-              <button
-            className="btn btn-outline-secondary"
-            onClick={() => navigate("/libri")}
-          >
-            📚 Vai alla Lista Libri
-          </button>
-        </div>
+        <button
+          className="btn btn-outline-secondary"
+          onClick={() => navigate("/libri")}
+        >
+          📚 Vai alla Lista Libri
+        </button>
       </div>
 
       {errore && <p className="text-danger">{errore}</p>}
@@ -115,7 +120,10 @@ const AggiungiLibro = () => {
             className="form-check-input"
             id="vendutoCheck"
             checked={venduto}
-            onChange={(e) => setVenduto(e.target.checked)}
+            onChange={(e) => {
+              setVenduto(e.target.checked);
+              if (!e.target.checked) setPagato(false);
+            }}
           />
           <label className="form-check-label" htmlFor="vendutoCheck">
             Venduto
@@ -133,7 +141,6 @@ const AggiungiLibro = () => {
                 className="form-control"
                 value={prezzoVendita}
                 onChange={(e) => setPrezzoVendita(e.target.value)}
-                required={venduto}
               />
             </div>
 
@@ -144,8 +151,20 @@ const AggiungiLibro = () => {
                 className="form-control"
                 value={dataVendita}
                 onChange={(e) => setDataVendita(e.target.value)}
-                required={venduto}
               />
+            </div>
+
+            <div className="form-check mb-3">
+              <input
+                type="checkbox"
+                className="form-check-input"
+                id="pagatoCheck"
+                checked={pagato}
+                onChange={(e) => setPagato(e.target.checked)}
+              />
+              <label className="form-check-label" htmlFor="pagatoCheck">
+                Pagato
+              </label>
             </div>
           </>
         )}
