@@ -151,6 +151,7 @@ const ListaLibri = () => {
         : valB.localeCompare(valA);
     });
 
+  const totaleLibri = libri.length;  
   const venduti = libri.filter((l) => l.venduto);
   const pagati = venduti.filter((l) => l.pagato);
   const nonPagati = venduti.filter((l) => !l.pagato);
@@ -175,14 +176,16 @@ const ListaLibri = () => {
       </div>
 
       {/* Riepilogo vendite */}
-      <div className="alert alert-info">
-        <div className="row text-center fw-bold">
-          <div className="col-md-3">📦 Venduti: {venduti.length}</div>
-          <div className="col-md-3">✅ Pagati: {pagati.length}</div>
-          <div className="col-md-3">💶 Incassato: {totalePagato.toFixed(2)} €</div>
-          <div className="col-md-3">⏳ Da incassare: {totaleDaIncassare.toFixed(2)} €</div>
-        </div>
-      </div>
+  <div className="alert alert-info">
+  <div className="row text-center fw-bold">
+    <div className="col-md-2">📚 Totale: {totaleLibri}</div>
+    <div className="col-md-2">📦 Venduti: {venduti.length}</div>
+    <div className="col-md-2">✅ Pagati: {pagati.length}</div>
+    <div className="col-md-2">⏳ Da incassare: {totaleDaIncassare.toFixed(2)} €</div>
+    <div className="col-md-2">💶 Incassato: {totalePagato.toFixed(2)} €</div>
+  </div>
+</div>
+
 
       {/* Filtri */}
       <div className="row mb-3">
